@@ -1,7 +1,7 @@
 package io.moatwel.playground.newthread
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import io.moatwel.playground.newthread.databinding.ActivityMainBinding
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -13,7 +13,8 @@ import io.reactivex.schedulers.Schedulers
 class MainActivity : AppCompatActivity() {
 
     private val workerScheduler = Schedulers.newThread()
-//    private val workerScheduler = Schedulers.io()
+    //    private val workerScheduler = Schedulers.io()
+
     private val compositeDisposable = CompositeDisposable()
 
     private lateinit var binding: ActivityMainBinding
@@ -26,7 +27,10 @@ class MainActivity : AppCompatActivity() {
         with(binding) {
             without.setOnClickListener {
                 val now = System.currentTimeMillis()
-                Singles.zip(task1(), task2())
+                Singles.zip(
+                    task1(),
+                    task2()
+                )
                     .subscribeOn(workerScheduler)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -40,7 +44,10 @@ class MainActivity : AppCompatActivity() {
 
             with.setOnClickListener {
                 val now = System.currentTimeMillis()
-                Singles.zip(task1WithScheduler(), task2WithScheduler())
+                Singles.zip(
+                    task1WithScheduler(),
+                    task2WithScheduler()
+                )
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
                         onSuccess = {
