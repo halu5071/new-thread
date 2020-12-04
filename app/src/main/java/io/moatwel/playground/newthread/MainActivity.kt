@@ -7,13 +7,14 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Singles
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 
 class MainActivity : AppCompatActivity() {
 
-    private val workerScheduler = Schedulers.newThread()
-    //    private val workerScheduler = Schedulers.io()
+    //    private val workerScheduler = Schedulers.newThread()
+    private val workerScheduler = Schedulers.io()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -40,13 +41,14 @@ class MainActivity : AppCompatActivity() {
                             log.text = "${log.text}\n$text"
                         }
                     )
+                    .addTo(compositeDisposable)
             }
 
             with.setOnClickListener {
                 val now = System.currentTimeMillis()
                 Singles.zip(
-                    task1WithScheduler(),
-                    task2WithScheduler()
+                    task1().subscribeOn(workerScheduler),
+                    task2().subscribeOn(workerScheduler)
                 )
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeBy(
@@ -56,6 +58,7 @@ class MainActivity : AppCompatActivity() {
                             log.text = "${log.text}\n$text"
                         }
                     )
+                    .addTo(compositeDisposable)
             }
         }
     }
@@ -65,33 +68,17 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun task1(): Single<Int> {
+    private fun task1(): Single<String> {
         return Single.fromCallable {
             Thread.sleep(1000)
-            1
+            Thread.currentThread().name
         }
     }
 
-    private fun task2(): Single<Int> {
+    private fun task2(): Single<String> {
         return Single.fromCallable {
             Thread.sleep(3000)
-            2
+            Thread.currentThread().name
         }
-    }
-
-    private fun task1WithScheduler(): Single<Int> {
-        return Single.fromCallable {
-            Thread.sleep(1000)
-            1
-        }
-            .subscribeOn(workerScheduler)
-    }
-
-    private fun task2WithScheduler(): Single<Int> {
-        return Single.fromCallable {
-            Thread.sleep(3000)
-            2
-        }
-            .subscribeOn(workerScheduler)
     }
 }
